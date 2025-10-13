@@ -14,10 +14,12 @@ pipeline {
         }
 
         stage('Build with Maven') {
-            steps {
+        steps {
+            dir('tp2-devops') {
                 sh 'mvn clean install -DskipTests'
             }
         }
+    }
 
         stage('Build Docker Image') {
             steps {
