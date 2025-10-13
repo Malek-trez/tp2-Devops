@@ -20,31 +20,32 @@ pipeline {
                 }
             }
         }
+        stage('Prepare Version') {
+            steps {
+                script {
+                    // Read version from pom.xml using grep/sed (works on Linux agents)
+                    def versionRaw = sh(
+                        script: "grep -m1 '<version>' tp2-devops/pom.xml | sed -E 's/.*<version>(.*)<\\/version>.*/\\1/'",
+                        returnStdout: true
+                    )
+                    // Remove control characters and trim whitespace
+                    def version = versionRaw.replaceAll("\\p{Cntrl}", "").trim()
+
+                    // Build Docker tag
+                    env.IMAGE_TAG = "${version}-${env.BUILD_NUMBER}"
+                }
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Get Maven version
-                    def versionRaw = sh(
-                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                        returnStdout: true
-                    )
-                    // Remove ANSI/control characters
-                    def version = versionRaw.replaceAll("\\p{Cntrl}", "").trim()
-                    
-                    // Create Docker tag
-                    def tag = "${version}-${env.BUILD_NUMBER}"
-                    
-                    // Build Docker image
-                    sh "docker build -t ${IMAGE_NAME}:${tag} tp2-devops"
-                    sh "docker tag ${IMAGE_NAME}:${tag} ${IMAGE_NAME}:latest"
-                    
-                    // Save tag for later stages
-                    env.IMAGE_TAG = tag
+                    sh "docker build -t ${IMAGE_NAME}:${env.IMAGE_TAG} tp2-devops"
+                    sh "docker tag ${IMAGE_NAME}:${env.IMAGE_TAG} ${IMAGE_NAME}:latest"
                 }
             }
         }
-        
+
         stage('Push Docker Image') {
             steps {
                 script {
