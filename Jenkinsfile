@@ -24,15 +24,27 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    def version = sh(script: "mvn -B help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+                    // Get Maven version
+                    def versionRaw = sh(
+                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                        returnStdout: true
+                    )
+                    // Remove ANSI/control characters
+                    def version = versionRaw.replaceAll("\\p{Cntrl}", "").trim()
+                    
+                    // Create Docker tag
                     def tag = "${version}-${env.BUILD_NUMBER}"
-                    sh "docker build -t ${IMAGE_NAME}:${tag} ."
+                    
+                    // Build Docker image
+                    sh "docker build -t ${IMAGE_NAME}:${tag} tp2-devops"
                     sh "docker tag ${IMAGE_NAME}:${tag} ${IMAGE_NAME}:latest"
+                    
+                    // Save tag for later stages
                     env.IMAGE_TAG = tag
                 }
             }
         }
-
+        
         stage('Push Docker Image') {
             steps {
                 script {
