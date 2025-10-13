@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials-id')
-        IMAGE_NAME = 'yourdockerhubusername/tp2-devops-app'
+        IMAGE_NAME = 'malek13/tp2-devops-app'
     }
 
     stages {
@@ -40,7 +40,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${IMAGE_NAME}:${env.IMAGE_TAG} tp2-devops"
+                    sh "docker build -t ${IMAGE_NAME}:${env.IMAGE_TAG} ."
                     sh "docker tag ${IMAGE_NAME}:${env.IMAGE_TAG} ${IMAGE_NAME}:latest"
                 }
             }
