@@ -14,17 +14,17 @@ pipeline {
         }
 
         stage('Build with Maven') {
-        steps {
-            dir('tp2-devops') {
-                sh 'mvn clean install -DskipTests'
+            steps {
+                dir('tp2-devops') {
+                    sh 'mvn clean install -DskipTests'
+                }
             }
         }
-    }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    def version = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+                    def version = sh(script: "mvn -B help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
                     def tag = "${version}-${env.BUILD_NUMBER}"
                     sh "docker build -t ${IMAGE_NAME}:${tag} ."
                     sh "docker tag ${IMAGE_NAME}:${tag} ${IMAGE_NAME}:latest"
