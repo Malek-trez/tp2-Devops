@@ -20,7 +20,7 @@ pipeline {
                 }
             }
         }
-        stage('Prepare Version') {
+        stage('Get The Version Number') {
             steps {
                 script {
                     // Read version from pom.xml using grep/sed (works on Linux agents)
